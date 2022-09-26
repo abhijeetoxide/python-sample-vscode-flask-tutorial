@@ -71,4 +71,15 @@ stages:
                 }
               urlSuffix: 'https://drt.ext.net.nokia.com/api/create_request/abhipras/5087'
               waitForCompletion: 'true'
+
+  - stage: SSH
+    jobs:
+      - job: CheckFiles
+        steps:
+        - task: SSH@0
+          inputs:
+            sshEndpoint: 'SSH Server'
+            runOptions: 'commands'
+            commands: 'ls -larth'
+            readyTimeout: '20000'
       
