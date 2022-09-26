@@ -12,6 +12,7 @@ stages:
               connectionType: 'connectedServiceName'
               serviceConnection: 'DRT New Request'
               method: 'POST'
+              headers: 
               body: |
                 {
                   "title": "EUR_01",
