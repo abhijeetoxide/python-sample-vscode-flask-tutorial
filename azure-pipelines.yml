@@ -1,99 +1,102 @@
 trigger:
 - master
 stages:
-  - stage: build
-    pool:
-      vmImage: ubuntu-latest
-    strategy:
-      matrix:
-        Python27:
-          python.version: '2.7'
-        Python35:
-          python.version: '3.5'
-        Python36:
-          python.version: '3.6'
-        Python37:
-          python.version: '3.7'
+  # - stage: build
+  #   pool:
+  #     vmImage: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       Python27:
+  #         python.version: '2.7'
+  #       Python35:
+  #         python.version: '3.5'
+  #       Python36:
+  #         python.version: '3.6'
+  #       Python37:
+  #         python.version: '3.7'
 
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-      displayName: 'Use Python $(python.version)'
+  #   steps:
+  #   - task: UsePythonVersion@0
+  #     inputs:
+  #       versionSpec: '$(python.version)'
+  #     displayName: 'Use Python $(python.version)'
 
-    - script: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-      displayName: 'Install dependencies'
+  #   - script: |
+  #       python -m pip install --upgrade pip
+  #       pip install -r requirements.txt
+  #     displayName: 'Install dependencies'
 
-    - script: |
-        pip install pytest pytest-azurepipelines
-        pytest
-      displayName: 'pytest'
+  #   - script: |
+  #       pip install pytest pytest-azurepipelines
+  #       pytest
+  #     displayName: 'pytest'
 
     - stage: call
+      jobs:
+        - job: CreateTicket
       pool: server
-    - task: InvokeRESTAPI@1
-      inputs:
-      connectionType: 'connectedServiceName'
-      method: 'POST'
-      headers: 
-      body: |
-        {
-          "title": "EUR_01",
-          "market_services": "EUR",
-          "customer_name": "Deutsche Telekom",
-          "ct_name": "",
-          "pmat_id": "",
-          "scrm_id": "",
-          "pm_email_id": "",
-          "upmap_id": "",
-          "customer_country": "Germany",
-          "customer_city": "Bonn",
-          "requested_project_start_date": "09/01/2022",
-          "request_type": "Prospect [% Probability]",
-          "prospect_probability": "75",
-          "portfolio_elements": "SDM",
-          "du_name": "CNS CN GS SDM & Signaling",
-          "lead_du_name": "CNS CN GS SDM & Signaling",
-          "services": "Solutioning,Design,Deployment,Testing,Migration,Technical Support",
-          "npi_applicable": "False",
-          "npi_product_name": "",
-          "npi_product_version": "",
-          "npi_start_date": "",
-          "npi_end_date": "",
-          "why_npi": "",
-          "npi_file": "",
-          "nsa_applicable": "False",
-          "product": "CNF Registers 23 on 3rd Party Cloud",
-          "project_name": "DT Germany Register BM move to CNF",
-          "project_support_type": "Onsite+Remote",
-          "project_type": "Scope Based",
-          "requested_project_duration": "52",
-          "requested_end_date": "",
-          "headcount_requested": "9",
-          "erm_demand_code": "",
-          "request_status": "Ongoing",
-          "gs_tentative_date": "",
-          "organisation": "CNS GBC MS EUR LDO Project Mgmt 2",
-          "du_head": "Saini, Anil (Nokia - IN/Noida)",
-          "du_head_mail": "anil.saini@nokia.com",
-          "epm_name": "girish.parameswaran@nokia.com",
-          "allocated_start_date": "",
-          "allocation_duration_week": "",
-          "allocated_resource_count": "0",
-          "allocated_resource_names": "",
-          "demand_fulfilment_date": "",
-          "lm_name": "jorge.farropas@nokia.com;pedro.6.gomes@nokia.com;zsolt.gyenge@nokia.com;navaneethan.ramaswamy@nokia.com;neena.goyal@nokia.com;",
-          "co_workers": "cheikh_tidjane.wague@nokia.com;",
-          "file": "https://nokia.sharepoint.com/sites/gsid_delivery_requests/Lists/New Request List/Attachments/1719/DT Germany CNF HSS_HLR Introduction Project.pdf;",
-          "created": "2022-06-29T13:32:36Z",
-          "requester_name": "Driss Alaoui Hilmi",
-          "requester_email_id": "driss.alaoui_hilmi@nokia.com",
-          "modified": "2022-08-26T11:19:06Z",
-          "comments": "RHJpc3Mgb24gSnVuLzI5LzIwMjI6IFByb2plY3QgZHVyYXRpb24gaXMgMTEwIHdlZWtzIChubyBjaGFuZ2Ugb24gcmVzb3VyY2VzIGR1cmluZyBleGVjdXRpb24gIHBoYXNlIGFsbG93ZWQpOyBHaXJpc2ggb24gSnVsLzAxLzIwMjI6IEhlbGxvIERyaXNzLAoKQ2FuIHlvdSBwbGVhc2Ugc2hhcmUgdGhlIFRTRC9TU0QgYW5kIG90aGVyIFByZXNhbGVzIGRvY3VtZW50cyBhbG9uZyB3aXRoIHRoZSBQTUFUICYgc0NSTSBJRCBvZiB0aGUgZGVtYW5kID8KCkluY2x1ZGluZyBTUyBUZWFtIGFuZCB3aWxsIG9yZ2FuaXNlIGNhbGwgbmV4dCB3ZWVrIGVhcmx5IHRvIHRha2UgaXQgZm9yd2FyZDsgR2lyaXNoIG9uIEp1bC8xNC8yMDIyOiBDYWxsIEhhcHBlbmVkIG9uIDE0LTA3LTIwMjIgd2l0aCBKYW4sIFBlZHJvICYgSm9yZ2UuIFByb2plY3QgZGV0YWlscyBhcmUgZXhwbGFpbmVkIGluIGRldGFpbC4gTmV4dCBmb2xsb3cgdXAgY2FsbCB3aWxsIGJlIHBsYW5uZWQgb24gMjEuMDcuMjAyMiB0byB0YWtlIGl0IGZvcndhcmQuOyBQZWRybyBvbiBBdWcvMjYvMjAyMjogUmVnYXJkaW5nIHRlaCA0IEdTIHJvbGVzICgyeFNBICsgMnhTRSkgcmVxdWVzdGVkIHRvIHN1cHBvcnQgdGhlIENORiBSZWdpc3RlcnMgRGVzaWduIGFuZCBkZWxpdmVyeSB1bmZvcnR1bmF0bHkgd2Ugc3RpbGwgZGlkIG5vdCBmaW5kIGFueSBhdmFpbGFiaWxpdHkgaW4gb3VyIHRlbWFzLiBXZSBrZWVwIGxvb2tpbmcgZm9yIGludGVybmFsIHByb2ZpbGVzIGJ1dCBzdGlsbCB0b2RheSB3ZSBjYW4ndCBwcm92aWRlIGFueSB2aXNpYmlsaXR5IGJ5IHdoZW4gdGhlIHJlc291cmNlcyB3aWxsIGJlIGF2YWlsYWJsZS4gQ291bGQgeW91IGtpbmRseSB0cnkgdG8gcHJpb3JpdGl6ZSB3aXRoaW4gRFQgcHJvZ3JhbSB0byBjaGVjayBpZiBhbiBpbnRlcm5hbCBTQSBjb3VsZCBiZSBhc3NpZ25lZD8g",
-        "modified_by":"pedro.6.gomes@nokia.com"
-        }
-      urlSuffix: 'https://drt.ext.net.nokia.com/api/create_request/abhipras/5087'
-      waitForCompletion: 'true'
+      steps:
+      - task: InvokeRESTAPI@1
+        inputs:
+        connectionType: 'connectedServiceName'
+        method: 'POST'
+        headers: 
+        body: |
+          {
+            "title": "EUR_01",
+            "market_services": "EUR",
+            "customer_name": "Deutsche Telekom",
+            "ct_name": "",
+            "pmat_id": "",
+            "scrm_id": "",
+            "pm_email_id": "",
+            "upmap_id": "",
+            "customer_country": "Germany",
+            "customer_city": "Bonn",
+            "requested_project_start_date": "09/01/2022",
+            "request_type": "Prospect [% Probability]",
+            "prospect_probability": "75",
+            "portfolio_elements": "SDM",
+            "du_name": "CNS CN GS SDM & Signaling",
+            "lead_du_name": "CNS CN GS SDM & Signaling",
+            "services": "Solutioning,Design,Deployment,Testing,Migration,Technical Support",
+            "npi_applicable": "False",
+            "npi_product_name": "",
+            "npi_product_version": "",
+            "npi_start_date": "",
+            "npi_end_date": "",
+            "why_npi": "",
+            "npi_file": "",
+            "nsa_applicable": "False",
+            "product": "CNF Registers 23 on 3rd Party Cloud",
+            "project_name": "DT Germany Register BM move to CNF",
+            "project_support_type": "Onsite+Remote",
+            "project_type": "Scope Based",
+            "requested_project_duration": "52",
+            "requested_end_date": "",
+            "headcount_requested": "9",
+            "erm_demand_code": "",
+            "request_status": "Ongoing",
+            "gs_tentative_date": "",
+            "organisation": "CNS GBC MS EUR LDO Project Mgmt 2",
+            "du_head": "Saini, Anil (Nokia - IN/Noida)",
+            "du_head_mail": "anil.saini@nokia.com",
+            "epm_name": "girish.parameswaran@nokia.com",
+            "allocated_start_date": "",
+            "allocation_duration_week": "",
+            "allocated_resource_count": "0",
+            "allocated_resource_names": "",
+            "demand_fulfilment_date": "",
+            "lm_name": "jorge.farropas@nokia.com;pedro.6.gomes@nokia.com;zsolt.gyenge@nokia.com;navaneethan.ramaswamy@nokia.com;neena.goyal@nokia.com;",
+            "co_workers": "cheikh_tidjane.wague@nokia.com;",
+            "file": "https://nokia.sharepoint.com/sites/gsid_delivery_requests/Lists/New Request List/Attachments/1719/DT Germany CNF HSS_HLR Introduction Project.pdf;",
+            "created": "2022-06-29T13:32:36Z",
+            "requester_name": "Driss Alaoui Hilmi",
+            "requester_email_id": "driss.alaoui_hilmi@nokia.com",
+            "modified": "2022-08-26T11:19:06Z",
+            "comments": "RHJpc3Mgb24gSnVuLzI5LzIwMjI6IFByb2plY3QgZHVyYXRpb24gaXMgMTEwIHdlZWtzIChubyBjaGFuZ2Ugb24gcmVzb3VyY2VzIGR1cmluZyBleGVjdXRpb24gIHBoYXNlIGFsbG93ZWQpOyBHaXJpc2ggb24gSnVsLzAxLzIwMjI6IEhlbGxvIERyaXNzLAoKQ2FuIHlvdSBwbGVhc2Ugc2hhcmUgdGhlIFRTRC9TU0QgYW5kIG90aGVyIFByZXNhbGVzIGRvY3VtZW50cyBhbG9uZyB3aXRoIHRoZSBQTUFUICYgc0NSTSBJRCBvZiB0aGUgZGVtYW5kID8KCkluY2x1ZGluZyBTUyBUZWFtIGFuZCB3aWxsIG9yZ2FuaXNlIGNhbGwgbmV4dCB3ZWVrIGVhcmx5IHRvIHRha2UgaXQgZm9yd2FyZDsgR2lyaXNoIG9uIEp1bC8xNC8yMDIyOiBDYWxsIEhhcHBlbmVkIG9uIDE0LTA3LTIwMjIgd2l0aCBKYW4sIFBlZHJvICYgSm9yZ2UuIFByb2plY3QgZGV0YWlscyBhcmUgZXhwbGFpbmVkIGluIGRldGFpbC4gTmV4dCBmb2xsb3cgdXAgY2FsbCB3aWxsIGJlIHBsYW5uZWQgb24gMjEuMDcuMjAyMiB0byB0YWtlIGl0IGZvcndhcmQuOyBQZWRybyBvbiBBdWcvMjYvMjAyMjogUmVnYXJkaW5nIHRlaCA0IEdTIHJvbGVzICgyeFNBICsgMnhTRSkgcmVxdWVzdGVkIHRvIHN1cHBvcnQgdGhlIENORiBSZWdpc3RlcnMgRGVzaWduIGFuZCBkZWxpdmVyeSB1bmZvcnR1bmF0bHkgd2Ugc3RpbGwgZGlkIG5vdCBmaW5kIGFueSBhdmFpbGFiaWxpdHkgaW4gb3VyIHRlbWFzLiBXZSBrZWVwIGxvb2tpbmcgZm9yIGludGVybmFsIHByb2ZpbGVzIGJ1dCBzdGlsbCB0b2RheSB3ZSBjYW4ndCBwcm92aWRlIGFueSB2aXNpYmlsaXR5IGJ5IHdoZW4gdGhlIHJlc291cmNlcyB3aWxsIGJlIGF2YWlsYWJsZS4gQ291bGQgeW91IGtpbmRseSB0cnkgdG8gcHJpb3JpdGl6ZSB3aXRoaW4gRFQgcHJvZ3JhbSB0byBjaGVjayBpZiBhbiBpbnRlcm5hbCBTQSBjb3VsZCBiZSBhc3NpZ25lZD8g",
+          "modified_by":"pedro.6.gomes@nokia.com"
+          }
+        urlSuffix: 'https://drt.ext.net.nokia.com/api/create_request/abhipras/5087'
+        waitForCompletion: 'true'
   
