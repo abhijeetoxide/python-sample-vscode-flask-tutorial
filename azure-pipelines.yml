@@ -9,7 +9,7 @@ stages:
           - task: InvokeRESTAPI@1
             displayName: "Create Ticket in DRT"
             inputs:
-              connectionType: 'connectedServiceName'
+              connectionType: 'Generic'
               method: 'POST'
               body: |
                 {
