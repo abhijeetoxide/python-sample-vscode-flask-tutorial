@@ -11,7 +11,6 @@ stages:
             inputs:
               connectionType: 'connectedServiceName'
               method: 'POST'
-              headers: 
               body: |
                 {
                   "title": "EUR_01",
